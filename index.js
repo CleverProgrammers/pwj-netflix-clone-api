@@ -3,6 +3,7 @@ const app = express() // initialize express
 const port = 3000 //setting the port 
 const mongoose = require('mongoose');
 const { Schema } = mongoose; // Grab the schema object from mongoose
+var cors = require('cors');
 require('dotenv').config()
 
 mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.nonsu.mongodb.net/netflix-api-db-dev?retryWrites=true&w=majority`, {
@@ -25,6 +26,8 @@ const User = mongoose.model('Users', new Schema(
     }
   }
 ));
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -59,6 +62,8 @@ app.post('/register', (req, res)=>{
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
+  console.log(email);
+  console.log(password);
   User.findOne({ email: email, password: password }, (err, user)=>{
     console.log(user);
     if(user){
