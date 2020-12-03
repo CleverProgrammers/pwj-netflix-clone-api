@@ -65,10 +65,10 @@ app.post('/login', (req, res) => {
   console.log(email);
   console.log(password);
   User.findOne({ email: email, password: password }, (err, user)=>{
-    console.log(user);
     if(user){
       res.send({
-        status: "valid"
+        status: "valid",
+        token: user.id
       });
     } else {
       res.send(404, {
