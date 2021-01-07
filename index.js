@@ -2,6 +2,7 @@ const express = require('express') // importing express
 const app = express() // initialize express
 const port = 3000 //setting the port 
 const mongoose = require('mongoose');
+const jwt = require("jsonwebtoken");
 const { Schema } = mongoose; // Grab the schema object from mongoose
 var cors = require('cors');
 require('dotenv').config()
@@ -31,11 +32,36 @@ app.use(cors());
 
 app.use(express.json());
 
+function authenticateToken(req, res, next){
+  console.log(req.headers);
+  const authHeaderToken = req.headers['authorization']
+  if(!authHeaderToken) return res.sendStatus(401);
+
+  jwt.verify(authHeaderToken, "asdl4u47jj4dj", (err, user)=>{
+    if(err) return res.sendStatus(403);
+    req.user = user;
+    next()
+  })
+}
+
 // using the get method
 // LOGIC for the Get Request
 // I'm trying to get data
 app.get('/', (req, res) => {
   res.send("Hellow World")
+})
+
+app.get('/wishlist', authenticateToken, (req, res) => {
+  console.log("I am authenitcated")
+  console.log(req.user);
+  WishList.findOne({user: user.id}, )
+  res.send({
+    items: [
+      "The Avengers",
+      "Tenet",
+      "Queens Gambit"
+    ]
+  })
 })
 
 app.post('/register', (req, res)=>{
@@ -59,16 +85,23 @@ app.post('/register', (req, res)=>{
   })
 })
 
+function genereateAccessToken(user){
+  const payload = {
+    id: user.id,
+    name: user.name
+  }
+  return jwt.sign(payload, "asdl4u47jj4dj", { expiresIn: '7200s' })
+}
+
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
-  console.log(email);
-  console.log(password);
   User.findOne({ email: email, password: password }, (err, user)=>{
     if(user){
+      const token = genereateAccessToken(user);
       res.send({
         status: "valid",
-        token: user.id
+        token: token
       });
     } else {
       res.send(404, {
