@@ -28,6 +28,22 @@ const User = mongoose.model('Users', new Schema(
   }
 ));
 
+const WishListSchema = new Schema(
+  { 
+    user: { 
+      type: Schema.Types.ObjectId, 
+      ref: 'Users'
+    },
+    movieId: Number,
+    backdrop_path: String,
+    title: String
+  }
+)
+
+WishListSchema.index({ user: 1, movieId: 1 }, { unique: true })
+
+const WishList = mongoose.model('WishList', WishListSchema);
+
 app.use(cors());
 
 app.use(express.json());
@@ -51,16 +67,41 @@ app.get('/', (req, res) => {
   res.send("Hellow World")
 })
 
+app.post('/wishlist', authenticateToken, (req, res)=>{
+
+  const newWishListItem = new WishList({
+    user: req.user.id,
+    movieId: req.body.movieId,
+    backdrop_path: req.body.backdrop_path,
+    title: req.body.title
+  })
+
+  newWishListItem.save((err, wishlistItem)=>{
+    if(err){
+      res.send(400, {
+        status: err
+      })
+    } else {
+      res.send({
+        wishlistItem: wishlistItem,
+        status: "saved"
+      })
+    }
+  })
+})
+
 app.get('/wishlist', authenticateToken, (req, res) => {
-  console.log("I am authenitcated")
-  console.log(req.user);
-  WishList.findOne({user: user.id}, )
-  res.send({
-    items: [
-      "The Avengers",
-      "Tenet",
-      "Queens Gambit"
-    ]
+  WishList.find({ user: req.user.id }, (err, docs)=>{
+    if(err){
+      res.send(400, {
+        status: err
+      })
+    } else {
+      res.send({
+        status: "good",
+        results: docs
+      })
+    }
   })
 })
 
