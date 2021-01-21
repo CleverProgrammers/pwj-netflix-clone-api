@@ -154,6 +154,6 @@ app.post('/login', (req, res) => {
 
 // start our app
 // listening to the port 
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
